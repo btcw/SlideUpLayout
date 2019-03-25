@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="BottomSlideLayout">
-        <attr name="TopMargin" format="dimension"/>
-    </declare-styleable>
     <declare-styleable name="SlideUpLayout">
         <attr name="showPercent" format="float"/>
         <attr name="showHeight" format="dimension"/>
