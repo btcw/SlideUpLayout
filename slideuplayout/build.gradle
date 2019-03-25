@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
+apply plugin: 'org.jetbrains.dokka'
 
 version = "1.0.0" //这里上传到jcenter是版本的控制
 
@@ -50,6 +51,12 @@ install {
                 packaging 'aar'
                 name 'SlideUpLayout'     //项目名字
                 url siteUrl
+                licenses {
+                    license {
+                        name 'The CommonUtil Software License, Version 1.0.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
                 developers {
                     developer {
                         id 'btcw'        //填写开发者的一些基本信息
@@ -66,21 +73,38 @@ install {
         }
     }
 }
+task generateSourcesJar(type: Jar) {
+    group = 'jar'
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
     classifier = 'sources'
 }
 task javadoc(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
+    options.encoding = "UTF-8"
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 }
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
+task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
+    outputFormat = 'javadoc'
+    outputDirectory = javadoc.destinationDir
+}
+task generateJavadoc(type: Jar, dependsOn: dokkaJavadoc) {
+    group = 'jar'
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
 artifacts {
-    archives javadocJar
-    archives sourcesJar
+    archives generateJavadoc //javadocJar
+    archives generateSourcesJar //sourcesJar
 }
 
 Properties properties = new Properties()
@@ -90,10 +114,11 @@ bintray {
     key = properties.getProperty("bintray.apikey")   //读取 local.properties 文件里面的 bintray.apikey
     configurations = ['archives']
     pkg {
-        repo = "maven" //(**慎重填写**)这里填写在bintray中自己新建仓库的名字
+        repo = "SlideUpLayout" //(**慎重填写**)这里填写在bintray中自己新建仓库的名字
         name = "SlideUpLayout"    //（**慎重填写**）发布到JCenter上的项目名字，必须填写，对应com.squareup.okhttp3:okhttp:3.4.1中的okhttp
         websiteUrl = siteUrl
         vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
         publish = true
     }
 }
