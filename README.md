@@ -1,6 +1,7 @@
 # [SlideUpLayout](https://github.com/btcw/SlideUpLayout)
 ### 简介
 >一个可以实现底部上滑布局的布局，支持xml布局预览
+
 ![image.png](https://upload-images.jianshu.io/upload_images/9090596-fd1e6bef487f292a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 ### 导入
