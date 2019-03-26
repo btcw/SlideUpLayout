@@ -24,8 +24,9 @@ class SlideUpLayout : FrameLayout {
     private var mMaxMoveMargin = 0f
     private var mMoveMargin = 0f
     private var mDraggingTag = false
+    private var mMaxTopMargin = 0
     private var mMoveProgressListener: MoveProgressListener? = null
-    private val mViewDragHelper by lazy { ViewDragHelper.create(this, ViewDragCallback()) }
+    private val mViewDragHelper by lazy { ViewDragHelper.create(this, 1f, ViewDragCallback()) }
     /* declare-styleable */
     //默认显示的高度  Default and shrink height
     private var mShowHeight = 0f
@@ -34,7 +35,7 @@ class SlideUpLayout : FrameLayout {
     //默认显示百分比，这个优先级高于showHeight。 shrink height with percent, This priority is higher than 'showHeight'.
     private var mShowPercent = 0f
     //处理向上还是向下滑动的分割位置，在这个百分比下，自动向下滑动，反之..。 This percentage determines the direction of automatic sliding.
-    private var mSeparatePercent = 1f
+    private var mSeparatePercent = -1f
     //上滑布局的子项是否响应拖动   whether the second layout's other children can be dragged
     private var mChildDraggable = false
 
@@ -45,7 +46,7 @@ class SlideUpLayout : FrameLayout {
         mShowHeight = ta.getDimension(R.styleable.SlideUpLayout_showHeight, 0f)
         mShowPercent = ta.getFloat(R.styleable.SlideUpLayout_showPercent, 0f) / 100f
         mTopMargin = ta.getDimension(R.styleable.SlideUpLayout_topMargin, 0f)
-        mSeparatePercent = ta.getFloat(R.styleable.SlideUpLayout_separatePercent, 100f) / 100f
+        mSeparatePercent = ta.getFloat(R.styleable.SlideUpLayout_separatePercent, -100f) / 100f
         mChildDraggable = ta.getBoolean(R.styleable.SlideUpLayout_childDraggable, false)
         ta.recycle()
     }
@@ -90,9 +91,9 @@ class SlideUpLayout : FrameLayout {
         for (i in 0 until childCount) {
             val child = getChildAt(i)
             if (i == 1) {
-                val maxTopMargin = (measuredHeight - mShowHeight).toInt()
-                mMaxMoveMargin = maxTopMargin - mTopMargin
-                child.layout(left, top + maxTopMargin, right, child.measuredHeight + maxTopMargin)
+                mMaxTopMargin = (measuredHeight - mShowHeight).toInt()
+                mMaxMoveMargin = mMaxTopMargin - mTopMargin
+                child.layout(left, top + mMaxTopMargin, right, child.measuredHeight + mMaxTopMargin)
             } else {
                 child.layout(left, top, right, bottom)
             }
@@ -117,7 +118,7 @@ class SlideUpLayout : FrameLayout {
     }
 
     override fun computeScroll() {
-        if (mViewDragHelper.continueSettling(true)) {//????
+        if (mViewDragHelper.continueSettling(true)) {
             ViewCompat.postInvalidateOnAnimation(this)
         }
     }
@@ -130,22 +131,13 @@ class SlideUpLayout : FrameLayout {
         override fun onViewReleased(releasedChild: View, xvel: Float, yvel: Float) {
             super.onViewReleased(releasedChild, xvel, yvel)
             mMoveProgressListener?.onRelease(releasedChild)
+            if (mSeparatePercent == -1f) return
             if (mMoveProgress >= mSeparatePercent) {
-                //上滑  Slide to top
-                mSecondChild?.let { mViewDragHelper.smoothSlideViewTo(it as View, 0, mTopMargin.toInt()) }
-                mMoveMargin = mMaxMoveMargin
-                mMoveProgressListener?.onSlideToTop(releasedChild)
+
+                slideToTop(releasedChild)
             } else {
-                //下滑到底部 Slide to bottom
-                mSecondChild?.let {
-                    mViewDragHelper.smoothSlideViewTo(
-                        it as View,
-                        0,
-                        (measuredHeight - mShowHeight).toInt()
-                    )
-                }
-                mMoveMargin = 0f
-                mMoveProgressListener?.onSlideToBottom(releasedChild)
+
+                slideToBottom(releasedChild)
             }
             ViewCompat.postInvalidateOnAnimation(this@SlideUpLayout)
         }
@@ -158,15 +150,50 @@ class SlideUpLayout : FrameLayout {
         }
     }
 
+    /**
+     * 上滑  Slide to top
+     */
+    private fun slideToTop(releasedChild: View) {
+        mSecondChild?.let { mViewDragHelper.smoothSlideViewTo(it, 0, mTopMargin.toInt()) }
+        mMoveMargin = mMaxMoveMargin
+        mMoveProgressListener?.onSlideToTop(releasedChild)
+    }
+
+    /**
+     * 下滑到底部 Slide to bottom
+     */
+    private fun slideToBottom(releasedChild: View) {
+        mSecondChild?.let {
+            mViewDragHelper.smoothSlideViewTo(it, 0, mMaxTopMargin)
+        }
+        mMoveMargin = 0f
+        mMoveProgressListener?.onSlideToBottom(releasedChild)
+    }
+
     fun setMoveProgressListener(listener: MoveProgressListener) {
         this.mMoveProgressListener = listener
     }
 
 
     interface MoveProgressListener {
+        /**
+         * 滑动进度监听，有可能大于1
+         */
         fun onMove(progress: Float)
+
+        /**
+         * 释放时间，不再触摸
+         */
         fun onRelease(child: View)
+
+        /**
+         * 滑动到顶部
+         */
         fun onSlideToTop(child: View)
+
+        /**
+         * 滑动到底部
+         */
         fun onSlideToBottom(child: View)
     }
 
@@ -215,6 +242,4 @@ class SlideUpLayout : FrameLayout {
         }
 
     }
-
-
 }
