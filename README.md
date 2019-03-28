@@ -70,3 +70,49 @@ implementation 'top.iwill.mylib:slideuplayout:1.0.1'
 >app:childDraggable 是否子布局可以响应滑动(Boolean)。默认false
 
 
+####3.接口
+```
+   interface MoveProgressListener {
+        /**
+         * 滑动进度监听，有可能大于1
+         */
+        fun onMove(progress: Float)
+
+        /**
+         * 释放时间，不再触摸
+         */
+        fun onRelease(child: View)
+
+        /**
+         * 滑动到顶部
+         */
+        fun onSlideToTop(child: View)
+
+        /**
+         * 滑动到底部
+         */
+        fun onSlideToBottom(child: View)
+    }
+
+```
+
+>Java:
+用setMoveProgressListener(listener:MoveProgressListener)进行监听注册
+
+>Kotlin(回调方法可选):
+```
+       content.registerProgressListener {
+            onMove {
+
+            }
+            onRelease{
+
+            }
+            onSlideToTop{
+
+            }
+            onSlideToBottom{
+
+            }
+        }
+```
