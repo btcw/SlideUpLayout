@@ -7,7 +7,7 @@
 ### 导入
 
 ```Gradle
-implementation 'top.iwill.mylib:slideuplayout:1.0.1'
+implementation 'top.iwill.mylib:slideuplayout:1.0.2'
 ```
 
 ### 使用说明
