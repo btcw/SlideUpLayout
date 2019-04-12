@@ -5,7 +5,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'org.jetbrains.dokka'
 
-version = "1.0.1" //这里上传到jcenter是版本的控制
+version = "1.0.2" //这里上传到jcenter是版本的控制
 
 android {
     compileSdkVersion 28

@@ -125,7 +125,7 @@ class SlideUpLayout : FrameLayout {
 
     inner class ViewDragCallback : ViewDragHelper.Callback() {
         override fun tryCaptureView(p0: View, p1: Int): Boolean {
-            return true
+            return p0 != getChildAt(0)
         }
 
         override fun onViewReleased(releasedChild: View, xvel: Float, yvel: Float) {
